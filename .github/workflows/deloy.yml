@@ -39,8 +39,19 @@ jobs:
           # Copy static build to deploy directory
           sudo cp -r /var/www/Market-react-ecommerce-main/build/* /var/www/deploy-frontend/
 
-          # Restart PM2 app
-          pm2 delete frontend-app || true
+          # Check if PM2 process exists, if yes then delete it
+          if pm2 list | grep -q 'frontend-app'; then
+            echo "🗑️ Removing existing PM2 process: frontend-app"
+            pm2 delete frontend-app
+          else
+            echo "ℹ️ PM2 process 'frontend-app' not found, skipping delete"
+          fi
+
+          # Start the new process
           pm2 start serve --name frontend-app -- -s /var/www/deploy-frontend -l 3000
-          pm2 startup systemd -u $USER --hp $HOME
+
+          # Setup startup script
+          sudo env PATH=$PATH:/home/ubuntu/.nvm/versions/node/v18.*/bin pm2 startup systemd -u $USER --hp $HOME
+
+          # Save PM2 process list
           pm2 save
