@@ -42,5 +42,5 @@ jobs:
           # Restart PM2 app
           pm2 delete frontend-app || true
           pm2 start serve --name frontend-app -- -s /var/www/deploy-frontend -l 3000
-          sudo pm2 startup systemd -u $USER --hp $HOME
+          pm2 startup systemd -u $USER --hp $HOME
           pm2 save
