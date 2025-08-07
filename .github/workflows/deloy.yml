@@ -34,7 +34,7 @@ jobs:
       - name: 🚀 Deploy with PM2
         run: |
           # Prepare deployment directory
-          mkdir -p /var/www/deploy-frontend
+          sudo mkdir -p /var/www/deploy-frontend
 
           # Copy static build to deploy directory
           cp -r /var/www/Market-react-ecommerce-main/build/* /var/www/deploy-frontend/
