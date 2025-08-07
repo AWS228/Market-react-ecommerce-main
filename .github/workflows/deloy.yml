@@ -48,7 +48,7 @@ jobs:
           fi
 
           # Start the new process
-          pm2 start serve --name frontend-app -- -s /var/www/deploy-frontend -l 3000
+          pm2 start ecosystem.config.js
 
           # Setup startup script
           sudo env PATH=$PATH:/home/ubuntu/.nvm/versions/node/v18.*/bin pm2 startup systemd -u $USER --hp $HOME
