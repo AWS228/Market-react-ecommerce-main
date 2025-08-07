@@ -1,13 +1,13 @@
-name: CI/CD for Market-react-ecommerce-main
+name: CI/CD for Market-react-ecommerce-main using Apache2
 
 on:
   push:
     branches:
-      - main  # Change if you use a different branch
+      - main  # Triggers only on push to main branch
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: self-hosted  # GitHub self-hosted runner (your EC2)
 
     steps:
       - name: 📥 Checkout Code
@@ -23,35 +23,26 @@ jobs:
           cd /var/www/Market-react-ecommerce-main
           npm install
 
-      - name: 🛠️ Build Project
+      - name: 🛠️ Build React App
         run: |
           cd /var/www/Market-react-ecommerce-main
           CI='' npm run build
-          
-      - name: 🔧 Install PM2 & Serve
-        run: npm install -g pm2 serve
 
-      - name: 🚀 Deploy with PM2
+      - name: 🚀 Deploy to Apache2 Web Server
         run: |
-          # Prepare deployment directory
-          sudo mkdir -p /var/www/deploy-frontend
+          # Clear Apache's HTML directory (optional but safe)
+          sudo rm -rf /var/www/html/*
 
-          # Copy static build to deploy directory
-          sudo cp -r /var/www/Market-react-ecommerce-main/build/* /var/www/deploy-frontend/
+          # Copy built static files to Apache public directory
+          sudo cp -r /var/www/Market-react-ecommerce-main/build/* /var/www/html/
 
-          # Check if PM2 process exists, if yes then delete it
-          if pm2 list | grep -q 'frontend-app'; then
-            echo "🗑️ Removing existing PM2 process: frontend-app"
-            pm2 delete frontend-app
-          else
-            echo "ℹ️ PM2 process 'frontend-app' not found, skipping delete"
+          # (Optional) Copy .htaccess for React Router
+          if [ -f /var/www/Market-react-ecommerce-main/build/.htaccess ]; then
+            sudo cp /var/www/Market-react-ecommerce-main/build/.htaccess /var/www/html/
           fi
 
-          # Start the new process
-          pm2 start ecosystem.config.js
+          # Fix permissions so Apache can serve files
+          sudo chown -R www-data:www-data /var/www/html
 
-          # Setup startup script
-          sudo env PATH=$PATH:/home/ubuntu/.nvm/versions/node/v18.*/bin pm2 startup systemd -u $USER --hp $HOME
-
-          # Save PM2 process list
-          pm2 save
+          # Restart Apache2 (optional)
+          sudo systemctl restart apache2
