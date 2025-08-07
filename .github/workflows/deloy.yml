@@ -1,0 +1,45 @@
+name: CI/CD for Market-react-ecommerce-main
+
+on:
+  push:
+    branches:
+      - main  # Change if you use a different branch
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 Install Dependencies
+        run: |
+          cd /var/www/Market-react-ecommerce-main
+          npm install
+
+      - name: 🛠️ Build Project
+        run: |
+          cd /var/www/Market-react-ecommerce-main
+          npm run build
+
+      - name: 🔧 Install PM2 & Serve
+        run: npm install -g pm2 serve
+
+      - name: 🚀 Deploy with PM2
+        run: |
+          # Prepare deployment directory
+          mkdir -p /var/www/deploy-frontend
+
+          # Copy static build to deploy directory
+          cp -r /var/www/Market-react-ecommerce-main/build/* /var/www/deploy-frontend/
+
+          # Restart PM2 app
+          pm2 delete frontend-app || true
+          pm2 start serve --name frontend-app -- -s /var/www/deploy-frontend -l 3000
+          pm2 save
