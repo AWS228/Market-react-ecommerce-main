@@ -26,8 +26,8 @@ jobs:
       - name: 🛠️ Build Project
         run: |
           cd /var/www/Market-react-ecommerce-main
-          npm run build
-
+          CI='' npm run build
+          
       - name: 🔧 Install PM2 & Serve
         run: npm install -g pm2 serve
 
