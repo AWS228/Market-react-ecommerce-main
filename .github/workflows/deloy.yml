@@ -20,7 +20,7 @@ jobs:
 
       - name: Build Next.js App (allow warnings)
         env:
-          CI: false   # Prevents treating warnings as errors during build
+          CI: false
         run: yarn build
 
       - name: List PM2 Processes (debugging)
@@ -28,8 +28,8 @@ jobs:
 
       - name: Start or Restart PM2 Process
         run: |
-          pm2 describe web-techbolt > /dev/null 2>&1
-          if [ $? -eq 0 ]; then
+          pm2 describe web-techbolt > /dev/null 2>&1 || true
+          if pm2 describe web-techbolt > /dev/null 2>&1; then
             echo "Process 'web-techbolt' exists. Restarting..."
             pm2 restart web-techbolt --update-env
           else
