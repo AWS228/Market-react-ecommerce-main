@@ -1,47 +1,37 @@
-name: CI/CD for Market-react-ecommerce-main using PM2
+name: Deploy Next.js App (Self-hosted)
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: self-hosted
 
     steps:
-      - name: 🔧 Fix ownership recursively on working directory
-        run: sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/Market-react-ecommerce-main
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+      - name: Check PM2 Version
+        run: pm2 -v
 
-      - name: 🔧 Fix Permissions Before Clean
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build Next.js App
+        run: yarn build
+
+      - name: List PM2 Processes (for debugging)
+        run: pm2 list
+
+      - name: Start or Restart PM2 Process
         run: |
-          sudo chown -R ubuntu:ubuntu ${{ github.workspace }}
-          chmod -R u+w ${{ github.workspace }}
-
-      - name: 🧹 Clean the Repository
-        run: git clean -ffdx
-
-      - name: ⚙️ Use NVM Node Environment and Deploy
-        run: |
-          export NVM_DIR="$HOME/.nvm"
-          source "$NVM_DIR/nvm.sh"
-          nvm use 18
-
-          cd /var/www/Market-react-ecommerce-main
-          npm install
-          CI='' npm run build
-
-          # Start or restart PM2 process
-          if pm2 list | grep -q "react-app"; then
-            pm2 restart react-app
+          pm2 describe web-techbolt > /dev/null 2>&1
+          if [ $? -eq 0 ]; then
+            echo "Process 'web-techbolt' exists. Restarting..."
+            pm2 restart web-techbolt --update-env
           else
-            pm2 start npm --name "react-app" -- run start-server
+            echo "Process 'web-techbolt' not found. Starting new PM2 process..."
+            pm2 start node_modules/next/dist/bin/next --name web-techbolt -- start -p 3000
           fi
-
           pm2 save
-
-          # Enable PM2 startup on reboot
-          sudo su -c "env PATH=$PATH:/home/ubuntu/.nvm/versions/node/$(nvm version)/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
