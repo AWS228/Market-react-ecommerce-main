@@ -33,7 +33,7 @@ jobs:
             echo "Process 'web-techbolt' exists. Restarting..."
             pm2 restart web-techbolt --update-env
           else
-            echo "Process 'web-techbolt' not found. Starting new PM2 process..."
-            pm2 start node_modules/next/dist/bin/next --name web-techbolt -- start -p 3000
+            echo "Process 'web-techbolt' not found. Starting new PM2 process with npx next start..."
+            pm2 start "npx next start -p 3000" --name web-techbolt --shell
           fi
           pm2 save
