@@ -13,13 +13,20 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: ⚙️ Use NVM Node Environment
+      - name: 🔧 Fix Permissions Before Clean
+        run: |
+          sudo chown -R ubuntu:ubuntu ${{ github.workspace }}
+          chmod -R u+w ${{ github.workspace }}
+
+      - name: 🧹 Clean the Repository
+        run: git clean -ffdx
+
+      - name: ⚙️ Use NVM Node Environment and Deploy
         run: |
           export NVM_DIR="$HOME/.nvm"
           source "$NVM_DIR/nvm.sh"
           nvm use 18
-
-          # Install deps & build
+          
           cd /var/www/Market-react-ecommerce-main
           npm install
           CI='' npm run build
@@ -35,4 +42,3 @@ jobs:
 
           # Enable PM2 startup on reboot
           sudo su -c "env PATH=$PATH:/home/ubuntu/.nvm/versions/node/$(nvm version)/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
-
