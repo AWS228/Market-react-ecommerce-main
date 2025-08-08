@@ -10,6 +10,9 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      - name: 🔧 Fix ownership recursively on working directory
+        run: sudo chown -R ubuntu:ubuntu /home/ubuntu/actions-runner/_work/Market-react-ecommerce-main
+
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
@@ -26,7 +29,7 @@ jobs:
           export NVM_DIR="$HOME/.nvm"
           source "$NVM_DIR/nvm.sh"
           nvm use 18
-          
+
           cd /var/www/Market-react-ecommerce-main
           npm install
           CI='' npm run build
