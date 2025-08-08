@@ -13,36 +13,25 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: 📦 Install Dependencies
+      - name: ⚙️ Use NVM Node Environment
         run: |
+          export NVM_DIR="$HOME/.nvm"
+          source "$NVM_DIR/nvm.sh"
+          nvm use 18
+
+          # Install deps & build
           cd /var/www/Market-react-ecommerce-main
           npm install
-
-      - name: 🛠️ Build React App
-        run: |
-          cd /var/www/Market-react-ecommerce-main
           CI='' npm run build
 
-      - name: 🚀 Restart PM2 Server
-        run: |
-          cd /var/www/Market-react-ecommerce-main
-
-          # Start or restart the app with PM2
+          # Start or restart PM2 process
           if pm2 list | grep -q "react-app"; then
             pm2 restart react-app
           else
             pm2 start npm --name "react-app" -- run start-server
           fi
 
-          # Save current PM2 process list
           pm2 save
 
-      - name: ⚙️ Enable PM2 Startup on Reboot
-        run: |
-          export PM2_HOME=/home/ubuntu/.pm2  # adjust for your user if different
-          sudo su -c "env PATH=$PATH:/home/ubuntu/.nvm/versions/node/$(node -v)/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
+          # Enable PM2 startup on reboot
+          sudo su -c "env PATH=$PATH:/home/ubuntu/.nvm/versions/node/$(nvm version)/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
