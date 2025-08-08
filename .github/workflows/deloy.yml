@@ -35,3 +35,4 @@ jobs:
 
           # Enable PM2 startup on reboot
           sudo su -c "env PATH=$PATH:/home/ubuntu/.nvm/versions/node/$(nvm version)/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
+
