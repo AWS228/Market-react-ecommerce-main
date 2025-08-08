@@ -1,13 +1,13 @@
-name: CI/CD for Market-react-ecommerce-main using Apache2
+name: CI/CD for Market-react-ecommerce-main using PM2
 
 on:
   push:
     branches:
-      - main  # Triggers only on push to main branch
+      - main
 
 jobs:
   deploy:
-    runs-on: self-hosted  # GitHub self-hosted runner (your EC2)
+    runs-on: self-hosted
 
     steps:
       - name: 📥 Checkout Code
@@ -28,21 +28,21 @@ jobs:
           cd /var/www/Market-react-ecommerce-main
           CI='' npm run build
 
-      - name: 🚀 Deploy to Apache2 Web Server
+      - name: 🚀 Restart PM2 Server
         run: |
-          # Clear Apache's HTML directory (optional but safe)
-          sudo rm -rf /var/www/html/*
+          cd /var/www/Market-react-ecommerce-main
 
-          # Copy built static files to Apache public directory
-          sudo cp -r /var/www/Market-react-ecommerce-main/build/* /var/www/html/
-
-          # (Optional) Copy .htaccess for React Router
-          if [ -f /var/www/Market-react-ecommerce-main/build/.htaccess ]; then
-            sudo cp /var/www/Market-react-ecommerce-main/build/.htaccess /var/www/html/
+          # Start or restart the app with PM2
+          if pm2 list | grep -q "react-app"; then
+            pm2 restart react-app
+          else
+            pm2 start npm --name "react-app" -- run start-server
           fi
 
-          # Fix permissions so Apache can serve files
-          sudo chown -R www-data:www-data /var/www/html
+          # Save current PM2 process list
+          pm2 save
 
-          # Restart Apache2 (optional)
-          sudo systemctl restart apache2
+      - name: ⚙️ Enable PM2 Startup on Reboot
+        run: |
+          export PM2_HOME=/home/ubuntu/.pm2  # adjust for your user if different
+          sudo su -c "env PATH=$PATH:/home/ubuntu/.nvm/versions/node/$(node -v)/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu"
