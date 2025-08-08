@@ -18,10 +18,12 @@ jobs:
       - name: Install Dependencies
         run: yarn install
 
-      - name: Build Next.js App
+      - name: Build Next.js App (allow warnings)
+        env:
+          CI: false   # Prevents treating warnings as errors during build
         run: yarn build
 
-      - name: List PM2 Processes (for debugging)
+      - name: List PM2 Processes (debugging)
         run: pm2 list
 
       - name: Start or Restart PM2 Process
